@@ -1,0 +1,16 @@
+{
+"companyName": "DefaultCompany",
+"productName": "Agent Customisation Study",
+"productVersion": "0.1",
+"dataUrl": "After Input Changes.data.unityweb",
+"wasmCodeUrl": "After Input Changes.wasm.code.unityweb",
+"wasmFrameworkUrl": "After Input Changes.wasm.framework.unityweb",
+"graphicsAPI": ["WebGL 2.0","WebGL 1.0"],
+"webglContextAttributes": {"preserveDrawingBuffer": false},
+"splashScreenStyle": "Light",
+"backgroundColor": "#F3F3F3",
+"cacheControl": {"default": "must-revalidate"},
+"developmentBuild": false,
+"multithreading": false,
+"unityVersion": "2019.2.19f1"
+}

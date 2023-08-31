@@ -1,0 +1,235 @@
+<html>
+	<script>
+
+		
+		
+		sounds = ["Long.wav", "Click-old.mp3"]
+		playbackObjects = []
+
+		window.onload = async function () {
+
+			playbackDevicesCount = 2;
+			connectedDevices = []
+			contentDiv = document.getElementById('content-div');
+			await navigator.mediaDevices.getUserMedia({audio: true, video: false})
+			await navigator.mediaDevices.enumerateDevices().then((devices) => {
+				devices.forEach((device) => {
+					if (device.kind == "audiooutput" && device.deviceId != "default" && device.deviceId != "communications") {
+						//connectedDevices[device.deviceId] = device.label 
+						console.log(`${device.label} id = ${device.deviceId}\n\n`);
+
+						connectedDevice = {}
+						connectedDevice.id = device.deviceId
+						connectedDevice.name = device.label
+						connectedDevices.push(connectedDevice)
+					}
+				});	
+			})
+
+			for (let i = 0; i < playbackDevicesCount; i++) {
+				playbackObject = {}
+
+				// Find the target element where you want to append the select element
+				var targetElement = document.getElementById('content-div');
+
+				var selectElement1 = document.createElement('select');
+				sounds.forEach((sound) => {
+					// Create option elements and set their value and text content
+					var option = document.createElement('option');
+					option.value = sound;
+					option.textContent = sound;
+					selectElement1.appendChild(option);
+				})
+				targetElement.appendChild(selectElement1);
+				playbackObject.soundToPlay = selectElement1;
+
+				selectElement1.addEventListener('change', function() {
+					  var selectedValue = this.value;
+					  console.log('Selected value:', selectedValue);
+					});
+
+				var selectElement2 = document.createElement('select');
+				connectedDevices.forEach((device) => {
+					var option = document.createElement('option')
+					option.value = device.id;
+					option.textContent = device.name;
+					selectElement2.appendChild(option);
+				});
+				targetElement.appendChild(selectElement2);
+				playbackObject.playbackDevice = selectElement2;
+				
+				selectElement2.addEventListener('change', function() {
+					  var selectedValue = this.value;
+					  console.log('Selected value:', selectedValue);
+					});
+
+				playbackObjects.push(playbackObject);
+			}
+		}
+
+		/*
+		// Populate a list of available audio sources.
+		window.onload = async function() {
+			playbackDevicesCount = 2;
+			connectedDevices = []
+			contentDiv = document.getElementById('content-div');
+			await navigator.mediaDevices.getUserMedia({audio: true, video: false})
+			await navigator.mediaDevices.enumerateDevices().then((devices) => {
+				devices.forEach((device) => {
+					if (device.kind == "audiooutput" && device.deviceId != "default" && device.deviceId != "communications") {
+						//connectedDevices[device.deviceId] = device.label 
+						console.log(`${device.label} id = ${device.deviceId}\n\n`);
+
+						connectedDevice = {}
+						connectedDevice.id = device.deviceId
+						connectedDevice.name = device.label
+						connectedDevices.push(connectedDevice)
+					}
+				});	
+			})
+			for (let i = 0; i < playbackDevicesCount; i++) {
+				playbackObject = {}
+
+				var select = document.createElement('select');
+				sounds.forEach((sound) => {
+				  option = document.createElement('option')
+				  option.value = sound;
+				  option.textContent = sound;
+				  select.appendChild(option);
+				});
+
+				contentDiv.appendChild(select);
+
+				select.addEventListener('change', function() {
+				  var selectedValue = this.value;
+				  console.log('Selected value:', selectedValue);
+				});
+
+
+				playbackObject.soundToPlay = select
+
+				
+
+				var otherSelect = document.createElement('select');
+				connectedDevices.forEach((device) => {
+					option = document.createElement('option')
+					option.value = device.id;
+					option.textContent = device.name;
+					
+					otherSelect.appendChild(option);
+				});
+				
+				contentDiv.appendChild(otherSelect);
+				playbackObject.playbackDevice = otherSelect;
+
+				//audio = document.createElement('audio')
+				//playbackObject.audioController = audio
+				playbackObject.audioController = new Audio()
+				//contentDiv.appendChild(audio)
+				playbackObjects.push(playbackObject);
+
+				contentDiv.innerHTML += "<br>"; 
+			}
+		}
+		*/
+	function playSounds () {
+		
+		
+		playbackObjects.forEach((playbackObject) => {
+			console.log (playbackObject.playbackDevice.value + " - " + playbackObject.soundToPlay.value)	
+			
+			playbackObject.audioController = new Audio (playbackObject.soundToPlay.value);
+			//playbackObject.audioController.url = playbackObject.soundToPlay.value
+			playbackObject.audioController.setSinkId(playbackObject.playbackDevice.value)
+			playbackObject.audioController.play()
+			console.log ("Done!");
+		})
+	}
+
+	function myFunction() {
+
+	  x = document.getElementById("myAudio2");
+	  x.setSinkId("fdb0acc28f690a3e2a38a9576b630fe35b3552b4d819f0d89a03cdbc7e85ebce")
+	  x.play();
+
+
+	  y = document.getElementById("myAudio1");
+	  y.setSinkId("65c558228f89aa702f16b6aad4fb34cc80054e0e3c1c84e72ecdb491b3f3eba4")
+	  y.play();
+
+	  z = document.getElementById("myAudio3");
+	  z.setSinkId("dbe2ce6660b1507afdac26537bedeb616e57367e0647956d52221ce49359b3a8")
+	  z.play();
+
+
+
+	  console.log (x.sinkId.toString());
+
+
+
+	  
+
+	  navigator.mediaDevices.enumerateDevices()
+
+		.then((devices) => {
+
+		  devices.forEach((device) => {
+
+			console.log(`${device.kind}: ${device.label} id = ${device.deviceId}\n\n`);
+
+		  });
+
+		})
+
+		.catch((err) => {
+
+		  console.error(`${err.name}: ${err.message}`);
+
+		});
+
+	}
+
+	</script>
+
+
+
+	
+
+
+
+	<audio id="myAudio1" controls>
+
+	  <source src="Long.wav" type="audio/wav">
+
+	Your browser does not support the audio element.
+
+	</audio>
+
+
+
+	<audio id="myAudio2" controls>
+
+	  <source src="Long.wav" type="audio/wav">
+
+	Your browser does not support the audio element.
+
+	</audio>
+
+
+	<audio id="myAudio3" controls>
+
+	  <source src="Long.wav" type="audio/wav">
+
+	Your browser does not support the audio element.
+
+	</audio>
+
+
+
+	
+
+	<div id="content-div"></div>
+	<br>
+	<button onclick="playSounds()">Play Sounds</button>
+
+</html>

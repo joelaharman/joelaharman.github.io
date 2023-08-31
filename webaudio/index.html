@@ -23,6 +23,8 @@
 
     window.onload = async function () {
 
+		contentDiv = document.getElementById('content-div');
+		
         // Retrieve all valid output devices
 	    await navigator.mediaDevices.getUserMedia({audio: true, video: false})
 		await navigator.mediaDevices.enumerateDevices().then((devices) => {
@@ -37,8 +39,7 @@
 		    });
         });
 
-        contentDiv = document.getElementById('content-div');
-        
+        // Create a new row for each required audio device.
         for (let i = 0; i < audioDevices; i++) {
             playbackObject = {}
             playbackObject.context = new (window.AudioContext || window.webkitAudioContext)();
@@ -66,7 +67,6 @@
 			// New line
             let lineBreak = document.createElement('br');
             contentDiv.appendChild(lineBreak);
-
             playbackObjects.push(playbackObject);
         }
 	}

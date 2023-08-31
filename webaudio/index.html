@@ -5,49 +5,23 @@
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <p>This is a demo to test the WebAudio system with multiple output devices.</p>
-  <button id="initAudioButton">Initialize Audio</button>
+  <h1>WebAudio Demo - Multiple Sounds and Outputs</h1>
+  <button onclick="initialiseAudio()">Initialize Audio</button>
   <div id="content-div"></div><br>
   <button onclick="playAllSounds()">Play Sounds</button>
 
   <script>
-    let audioContext;
-    let soundBuffer;
+    let audioContext; // Main audio context is used to buffer clips.
     let deviceSelector;
-    let connectedDevices = []
-    let playbackObjects = []
+	let soundBuffers = [];
+    let connectedDevices = [];
+    let playbackObjects = [];
     let audioDevices = 2;
-
+	
     sounds = ["Sound1.wav", "Sound2.wav", "Sound3.wav", "Sound4.wav", "Sound5.wav",
               "Sound6.wav", "Sound7.wav", "Sound8.wav", "Sound9.wav"]
 
-    soundBuffers = []
-
-    
-
-    
-
-    // Load the given sound into an audio buffer.
-    async function loadSound(url) {
-        const response = await fetch(url);
-        const arrayBuffer = await response.arrayBuffer();
-        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-        soundBuffers.push(audioBuffer);
-        return audioBuffer;
-    }
-
-    // Play the given sound from an audio buffer.
-    function playSound(buffer) {
-        const source = audioContext.createBufferSource();
-        source.buffer = buffer;
-        source.connect(audioContext.destination);
-        source.start(0);
-    }
-
-	
-
     window.onload = async function () {
-
 
         // Retrieve all valid output devices
 	    await navigator.mediaDevices.getUserMedia({audio: true, video: false})
@@ -66,35 +40,30 @@
         contentDiv = document.getElementById('content-div');
         
         for (let i = 0; i < audioDevices; i++) {
-            
             playbackObject = {}
-
             playbackObject.context = new (window.AudioContext || window.webkitAudioContext)();
 
             // Create the sound dropdown
-            let soundSelector = document.createElement('select');
+            playbackObject.soundSelector = document.createElement('select');
 		    sounds.forEach((sound) => {
 			    var option = document.createElement('option');
-                //audioElement = new Audio(sound);
-                //audioElement.play();
 			    option.value = sound
 			    option.textContent = sound
-			    soundSelector.appendChild(option);
+			    playbackObject.soundSelector.appendChild(option);
 		    })
-            playbackObject.soundSelector = soundSelector;
-            contentDiv.appendChild(soundSelector);
+            contentDiv.appendChild(playbackObject.soundSelector);
 
             // Create the device dropdown
-            let deviceSelector = document.createElement('select');
+            playbackObject.deviceSelector = document.createElement('select');
 		    connectedDevices.forEach((connectedDevice) => {
 			    var option = document.createElement('option');
 			    option.value = connectedDevice.id;
 			    option.textContent = connectedDevice.name;
-			    deviceSelector.appendChild(option);
+			    playbackObject.deviceSelector.appendChild(option);
 		    })
-            playbackObject.deviceSelector = deviceSelector;
-            contentDiv.appendChild(deviceSelector);
+            contentDiv.appendChild(playbackObject.deviceSelector);
 
+			// New line
             let lineBreak = document.createElement('br');
             contentDiv.appendChild(lineBreak);
 
@@ -102,43 +71,7 @@
         }
 	}
 
-    // Connect the audio source to a specific output device
-    async function playSoundOnDeviceDestination(deviceId, buffer) {
-        const outputDevice = new MediaStreamAudioDestinationNode(audioContext, { deviceId });
-        const source = audioContext.createBufferSource();
-        source.buffer = buffer;
-        source.connect(outputDevice);
-        source.start(0);
-    }
-
-    
-
-    async function playSoundOnDeviceOld(deviceId, url) {
-      audioElement = new Audio(url);
-      await audioElement.setSinkId(deviceId);
-      audioElement.play();
-    }
-
-
-
-
-    async function playSoundOnDevice3(deviceId, buffer) {
-        const source = audioContext.createBufferSource();
-        source.buffer = soundBuffer;
-
-        // Connect the source to the audio destination (default output)
-        source.connect(audioContext.destination);
-
-        await source.setSinkId(deviceId);
-        source.start();
-    }
-
-    function playSoundOnDevice(deviceId, url) {
-      audioElement = new Audio(url);
-      audioElement.setSinkId(deviceId);
-      audioElement.play();
-    }
-
+	// Play a specific buffered sound on the given audio context, outputing to the specified output device.
     function playSoundOnContext(context, deviceId, buffer) {
       context.setSinkId(deviceId);
       const source = context.createBufferSource();
@@ -146,47 +79,34 @@
       source.connect(context.destination);
       source.start(0);
     }
-
+	
+	// Play all of the listed sounds on their corresponding output devices.
     function playAllSounds () {
         console.log(`Playing sounds`);
         playbackObjects.forEach((playbackObject) => {
-            console.log(`${playbackObject.deviceSelector.value} ${playbackObject.soundSelector.value}\n\n`);
-            //playSoundOnDevice(playbackObject.deviceSelector.value, playbackObject.soundSelector.value);
             playSoundOnContext(playbackObject.context, playbackObject.deviceSelector.value, soundBuffers[playbackObject.soundSelector.selectedIndex]);
         })
     }
-
-    function playSound1() {
-        playSound(soundBuffer);
-    }
-
-    function playSound2() {
-        playSoundOnDevice(deviceSelector.value, "Click-old.mp3");
-    }
-
-    function playSound3() {
-        playSoundOnDevice2(deviceSelector.value, soundBuffer);
-    }
-
-    function playSound4() {
-
-        //connectedDevices.forEach((connectedDevice) => {
-		//	playSoundOnDevice3(deviceSelector.value, soundBuffer);
-		//})
-
-        playSoundOnDevice3(deviceSelector.value, soundBuffer);
-    }
-
-    // Initialize the AudioContext after a user gesture (button click)
-    document.getElementById('initAudioButton').addEventListener('click', async function() {
-      if (!audioContext) {
+	
+	// Cannot be done on load as the user must first interact with the page (WebAudio Privacy Requirement).
+	async function initialiseAudio() {
+		if (!audioContext) {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         sounds.forEach((sound) => {
-            soundBuffer = loadSound(sound);
+            loadSound(sound);
         })
       }
       document.getElementById('initAudioButton').style.display = "none";
-    });
+	}
+	
+	// Buffer the sound at the given URL.
+    async function loadSound(url) {
+        const response = await fetch(url);
+        const arrayBuffer = await response.arrayBuffer();
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        soundBuffers.push(audioBuffer);
+        return audioBuffer;
+    }
   </script>
 </body>
 </html>

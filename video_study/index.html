@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Online Video Study</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <link rel="stylesheet" href="TemplateData/style.css">
+    <link rel="manifest" href="manifest.webmanifest">
+    <style>
+      body {
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      #unity-container {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: black; /* Optional background color */
+      }
+
+      #unity-canvas {
+        background-color: black; /* Optional to visually see the canvas space */
+      }
+    </style>
+  
+    <!-- MICROPHONE PRO START -->
+    <script src='./microphone.js'></script>
+    <!-- MICROPHONE PRO END -->
+</head>
+  <body>
+    <div id="unity-container">
+      <canvas id="unity-canvas" tabindex="-1"></canvas>
+      <div id="unity-loading-bar">
+        <div id="unity-logo"></div>
+        <div id="unity-progress-bar-empty">
+          <div id="unity-progress-bar-full"></div>
+        </div>
+      </div>
+      <div id="unity-warning"> </div>
+    </div>
+    
+    <script>
+      window.addEventListener("load", function () {
+        if ("serviceWorker" in navigator) {
+          navigator.serviceWorker.register("ServiceWorker.js");
+        }
+      });
+
+      var container = document.querySelector("#unity-container");
+      var canvas = document.querySelector("#unity-canvas");
+      var loadingBar = document.querySelector("#unity-loading-bar");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var warningBanner = document.querySelector("#unity-warning");
+
+      // Restoring the unityShowBanner function
+      function unityShowBanner(msg, type) {
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+        }
+        var div = document.createElement('div');
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == 'error') div.style = 'background: red; padding: 10px;';
+        else {
+          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+          setTimeout(function() {
+            warningBanner.removeChild(div);
+            updateBannerVisibility();
+          }, 5000);
+        }
+        updateBannerVisibility();
+      }
+
+      // Basic resizing function to maintain 16:9 aspect ratio
+      function resizeCanvas() {
+        var targetAspect = 16 / 9;
+        var windowAspect = window.innerWidth / window.innerHeight;
+
+        if (windowAspect > targetAspect) {
+          canvas.style.width = window.innerHeight * targetAspect + "px";
+          canvas.style.height = window.innerHeight + "px";
+        } else {
+          canvas.style.width = window.innerWidth + "px";
+          canvas.style.height = window.innerWidth / targetAspect + "px";
+        }
+      }
+
+      window.addEventListener("resize", resizeCanvas);
+      window.addEventListener("load", resizeCanvas);
+
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/video_study.loader.js";
+      var config = {
+        dataUrl: buildUrl + "/video_study.data.unityweb",
+        frameworkUrl: buildUrl + "/video_study.framework.js.unityweb",
+        codeUrl: buildUrl + "/video_study.wasm.unityweb",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "QUT - Clevar Group",
+        productName: "Online Video Study",
+        productVersion: "0.1",
+        showBanner: unityShowBanner,
+      };
+
+      loadingBar.style.display = "block";
+
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          progressBarFull.style.width = 100 * progress + "%";
+        }).then((unityInstance) => {
+          loadingBar.style.display = "none";
+          resizeCanvas();  // Ensure canvas resizes after Unity loads
+        }).catch((message) => {
+          alert(message);
+        });
+      };
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>
